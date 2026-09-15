@@ -1,0 +1,9 @@
+# Netlify 部署配置（相对于仓库中的 DayDone 目录）
+# 站点 Base directory 已在 Netlify 中设置为 DayDone
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
