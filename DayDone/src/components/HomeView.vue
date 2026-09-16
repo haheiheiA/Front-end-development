@@ -6,6 +6,10 @@ defineProps({
     type: Date,
     required: true,
   },
+  todayKey: {
+    type: String,
+    required: true,
+  },
   activeItems: {
     type: Array,
     required: true,
@@ -32,7 +36,7 @@ defineProps({
   },
 })
 
-defineEmits(['toggle-item', 'open-item-manager'])
+defineEmits(['toggle-item', 'edit-note', 'open-item-manager'])
 </script>
 
 <template>
@@ -89,7 +93,22 @@ defineEmits(['toggle-item', 'open-item-manager'])
 
           <div class="habit-card__copy">
             <h3>{{ item.name }}</h3>
-            <p>{{ currentRecord[item.id] ? '今天已完成' : item.hint || '点一下，记录今天完成' }}</p>
+            <div class="habit-card__last">
+              <template v-if="item.lastCompleted">
+                <span>上次：{{ item.lastCompleted.lastLabel }}</span>
+                <span>距今：{{ item.lastCompleted.distanceLabel }}</span>
+              </template>
+              <span v-else>暂无记录</span>
+            </div>
+            <p v-if="item.note" class="habit-card__note-preview">“{{ item.note }}”</p>
+            <button
+              v-if="currentRecord[item.id]"
+              class="habit-card__note-button"
+              type="button"
+              @click="$emit('edit-note', { dateKey: todayKey, itemId: item.id })"
+            >
+              {{ item.note ? '编辑备注' : '添加备注' }}
+            </button>
           </div>
 
           <button
@@ -133,9 +152,10 @@ defineEmits(['toggle-item', 'open-item-manager'])
               class="history-item"
               :class="{ 'history-item--done': day.record[item.id] }"
               role="img"
-              :aria-label="`${item.name}${day.record[item.id] ? '已完成' : '未完成'}`"
+              :aria-label="`${item.name}${day.record[item.id] ? '已完成' : '未完成'}${item.note ? `，备注：${item.note}` : ''}`"
             >
               {{ item.emoji }}
+              <span v-if="item.note" class="history-item__note" aria-hidden="true"></span>
             </span>
           </div>
 

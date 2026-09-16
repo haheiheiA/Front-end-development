@@ -6,6 +6,7 @@ import {
   formatFullDate,
   fromDateKey,
   getItemsForDate,
+  getRecordNote,
   normalizeRecord,
   toDateKey,
 } from '../lib/daydone'
@@ -24,6 +25,8 @@ const props = defineProps({
     required: true,
   },
 })
+
+defineEmits(['edit-note'])
 
 const WEEKDAY_LABELS = ['一', '二', '三', '四', '五', '六', '日']
 
@@ -89,7 +92,10 @@ const selectedDay = computed(() => {
   const dateKey = selectedDateKey.value
   const date = fromDateKey(dateKey)
   const record = normalizeRecord(props.records[dateKey])
-  const dayItems = getItemsForDate(record, props.items, dateKey)
+  const dayItems = getItemsForDate(record, props.items, dateKey).map((item) => ({
+    ...item,
+    note: getRecordNote(record, item.id),
+  }))
   const completedCount = countCompleted(record, dayItems)
 
   return {
@@ -145,7 +151,7 @@ watch(
     <header class="calendar-hero">
       <p class="brand">DAY DONE</p>
       <h1>打卡日历</h1>
-      <p>点击日期，查看当天每项打卡状态</p>
+      <p>点击日期，查看当天状态和备注</p>
     </header>
 
     <section class="calendar-card" aria-labelledby="calendar-month-title">
@@ -225,7 +231,16 @@ watch(
           <span class="day-detail__icon" aria-hidden="true">{{ item.emoji }}</span>
           <div class="day-detail__copy">
             <strong>{{ item.name }}</strong>
-            <span v-if="item.archived">历史项目</span>
+            <span v-if="item.archived" class="day-detail__archived">历史项目</span>
+            <p v-if="item.note" class="day-detail__note">“{{ item.note }}”</p>
+            <button
+              v-if="selectedDay.record[item.id]"
+              class="day-detail__note-button"
+              type="button"
+              @click="$emit('edit-note', { dateKey: selectedDay.dateKey, itemId: item.id })"
+            >
+              {{ item.note ? '编辑备注' : '添加备注' }}
+            </button>
           </div>
           <span class="day-detail__status">
             {{ selectedDay.record[item.id] ? '已完成' : '未完成' }}
