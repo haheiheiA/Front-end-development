@@ -1,91 +1,88 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import CalendarView from './components/CalendarView.vue'
+import CelebrationModal from './components/CelebrationModal.vue'
+import HomeView from './components/HomeView.vue'
+import ItemManager from './components/ItemManager.vue'
+import NoteEditor from './components/NoteEditor.vue'
+import SettingsView from './components/SettingsView.vue'
+import StatsView from './components/StatsView.vue'
+import { useUiHistory } from './composables/useUiHistory'
+import {
+  DEFAULT_ITEMS,
+  ITEMS_STORAGE_KEY,
+  RECORDS_STORAGE_KEY,
+  countCompleted,
+  createCustomItem,
+  getItemsForDate,
+  getLastCompletion,
+  getRecordNote,
+  normalizeRecord,
+  readItems,
+  readRecords,
+  removeRecordMeta,
+  toDateKey,
+  updateRecordMeta,
+  writeItems,
+  writeRecords,
+} from './lib/daydone'
 
-const STORAGE_KEY = 'daydone.records.v1'
 const HISTORY_DAYS = 7
-
-const CHECK_ITEMS = [
-  { key: 'toilet', label: '上大号', emoji: '💩', hint: '身体轻松一点' },
-  { key: 'shower', label: '洗澡', emoji: '🚿', hint: '洗去一天的疲惫' },
-  { key: 'laundry', label: '洗衣服', emoji: '🧺', hint: '换一身清爽' },
+const NAVIGATION_ITEMS = [
+  { id: 'home', label: '首页' },
+  { id: 'calendar', label: '日历' },
+  { id: 'stats', label: '统计' },
+  { id: 'settings', label: '设置' },
 ]
 
-const emptyRecord = () => ({
-  toilet: false,
-  shower: false,
-  laundry: false,
-})
-
-const padNumber = (value) => String(value).padStart(2, '0')
-
-function toDateKey(date) {
-  return `${date.getFullYear()}-${padNumber(date.getMonth() + 1)}-${padNumber(date.getDate())}`
-}
-
-
-function normalizeRecord(record) {
-  return {
-    toilet: record?.toilet === true,
-    shower: record?.shower === true,
-    laundry: record?.laundry === true,
-  }
-}
-
-function readRecords() {
-  try {
-    const rawRecords = window.localStorage.getItem(STORAGE_KEY)
-
-    if (!rawRecords) {
-      return {}
-    }
-
-    const parsedRecords = JSON.parse(rawRecords)
-
-    if (!parsedRecords || typeof parsedRecords !== 'object' || Array.isArray(parsedRecords)) {
-      return {}
-    }
-
-    return Object.fromEntries(
-      Object.entries(parsedRecords)
-        .filter(([dateKey]) => /^\d{4}-\d{2}-\d{2}$/.test(dateKey))
-        .map(([dateKey, record]) => [dateKey, normalizeRecord(record)]),
-    )
-  } catch (error) {
-    console.warn('无法读取本地打卡数据，将使用空记录。', error)
-    return {}
-  }
-}
-
-function writeRecords(records) {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(records))
-  } catch (error) {
-    console.warn('无法保存本地打卡数据。', error)
-  }
-}
-
 const records = ref(readRecords())
+const items = ref(readItems())
 const currentDate = ref(new Date())
+const {
+  activeView,
+  isItemManagerOpen,
+  noteEditor,
+  isCelebrationOpen,
+  navigateToView,
+  openItemManager,
+  openNoteEditor: openNoteEditorOverlay,
+  openCelebration,
+  closeItemManager,
+  closeNoteEditor,
+  closeCelebration,
+} = useUiHistory()
 
-const currentDateKey = computed(() => toDateKey(currentDate.value))
-const currentRecord = computed(() => records.value[currentDateKey.value] ?? emptyRecord())
+const todayKey = computed(() => toDateKey(currentDate.value))
+const activeItems = computed(() => items.value.filter((item) => !item.archived))
+const todayRecord = computed(() => normalizeRecord(records.value[todayKey.value]))
+const completedCount = computed(() => countCompleted(todayRecord.value, activeItems.value))
 
-const completedCount = computed(
-  () => CHECK_ITEMS.filter((item) => currentRecord.value[item.key]).length,
+const homeItems = computed(() =>
+  activeItems.value.map((item) => ({
+    ...item,
+    lastCompleted: getLastCompletion(records.value, item.id, currentDate.value),
+    note: getRecordNote(todayRecord.value, item.id),
+  })),
 )
 
-const progressPercent = computed(() => `${(completedCount.value / CHECK_ITEMS.length) * 100}%`)
+const progressPercent = computed(() => {
+  if (activeItems.value.length === 0) {
+    return '0%'
+  }
+
+  return `${(completedCount.value / activeItems.value.length) * 100}%`
+})
 
 const progressMessage = computed(() => {
   if (completedCount.value === 0) {
     return '从任意一件开始吧'
   }
 
-  if (completedCount.value === CHECK_ITEMS.length) {
+  if (completedCount.value === activeItems.value.length) {
     return '今天全部完成，太棒了'
   }
 
-  return `还差 ${CHECK_ITEMS.length - completedCount.value} 件`
+  return `还差 ${activeItems.value.length - completedCount.value} 件`
 })
 
 const recentDays = computed(() =>
@@ -97,173 +94,304 @@ const recentDays = computed(() =>
     )
     const dateKey = toDateKey(date)
     const record = normalizeRecord(records.value[dateKey])
+    const dayItems = getItemsForDate(record, items.value, dateKey).map((item) => ({
+      ...item,
+      note: getRecordNote(record, item.id),
+    }))
 
     return {
       dateKey,
-      isToday: dateKey === currentDateKey.value,
+      isToday: dateKey === todayKey.value,
       weekday: new Intl.DateTimeFormat('zh-CN', { weekday: 'short' }).format(date),
       dateLabel: new Intl.DateTimeFormat('zh-CN', {
         month: 'numeric',
         day: 'numeric',
       }).format(date),
       record,
-      completedCount: CHECK_ITEMS.filter((item) => record[item.key]).length,
+      items: dayItems,
+      completedCount: countCompleted(record, dayItems),
     }
   }),
 )
 
-function ensureCurrentRecord() {
-  const dateKey = currentDateKey.value
+const noteEditorItem = computed(() =>
+  noteEditor.value ? items.value.find((item) => item.id === noteEditor.value.itemId) : null,
+)
 
-  if (!records.value[dateKey]) {
-    records.value[dateKey] = emptyRecord()
+const noteEditorNote = computed(() => {
+  if (!noteEditor.value) {
+    return ''
+  }
+
+  return getRecordNote(normalizeRecord(records.value[noteEditor.value.dateKey]), noteEditor.value.itemId)
+})
+
+function ensureTodayRecord() {
+  const dateKey = todayKey.value
+  const record = normalizeRecord(records.value[dateKey])
+  const recordWasMissing = !records.value[dateKey]
+  let recordChanged = recordWasMissing
+
+  activeItems.value.forEach((item) => {
+    if (!Object.prototype.hasOwnProperty.call(record, item.id)) {
+      record[item.id] = false
+      recordChanged = true
+    }
+  })
+
+  if (recordChanged) {
+    records.value[dateKey] = record
     writeRecords(records.value)
   }
 }
 
-function toggleItem(itemKey) {
-  ensureCurrentRecord()
+function toggleItem(itemId) {
+  ensureTodayRecord()
 
-  const record = records.value[currentDateKey.value]
-  record[itemKey] = !record[itemKey]
+  const dateKey = todayKey.value
+  const record = normalizeRecord(records.value[dateKey])
+  const wasCompleted = record[itemId] === true
+  let nextRecord
+
+  if (wasCompleted) {
+    const existingNote = getRecordNote(record, itemId)
+
+    if (
+      existingNote &&
+      !window.confirm('取消这项打卡会同时删除当天备注，确定继续吗？')
+    ) {
+      return
+    }
+
+    record[itemId] = false
+    nextRecord = removeRecordMeta(record, itemId)
+  } else {
+    const completesAllItems =
+      activeItems.value.length > 0 &&
+      completedCount.value === activeItems.value.length - 1
+
+    record[itemId] = true
+    nextRecord = updateRecordMeta(record, itemId, {
+      completedAt: new Date().toISOString(),
+      note: '',
+    })
+
+    records.value[dateKey] = nextRecord
+    writeRecords(records.value)
+
+    if (completesAllItems) {
+      openCelebration()
+    }
+
+    return
+  }
+
+  records.value[dateKey] = nextRecord
   writeRecords(records.value)
 }
 
-function formatFullDate(date) {
-  return new Intl.DateTimeFormat('zh-CN', {
-    month: 'long',
-    day: 'numeric',
-    weekday: 'long',
-  }).format(date)
+function openNoteEditor({ dateKey, itemId }) {
+  const record = normalizeRecord(records.value[dateKey])
+
+  if (record[itemId] !== true) {
+    return
+  }
+
+  openNoteEditorOverlay({ dateKey, itemId })
 }
 
-function refreshDateIfNeeded() {
-  const now = new Date()
 
-  if (toDateKey(now) !== currentDateKey.value) {
-    currentDate.value = now
-    ensureCurrentRecord()
+function saveNote({ dateKey, itemId, note }) {
+  const record = normalizeRecord(records.value[dateKey])
+
+  if (record[itemId] !== true) {
+    closeNoteEditor()
+    return
+  }
+
+  records.value[dateKey] = updateRecordMeta(record, itemId, { note })
+  writeRecords(records.value)
+  closeNoteEditor()
+}
+
+function deleteNote({ dateKey, itemId }) {
+  const record = normalizeRecord(records.value[dateKey])
+
+  if (record[itemId] !== true) {
+    closeNoteEditor()
+    return
+  }
+
+  records.value[dateKey] = updateRecordMeta(record, itemId, { note: '' })
+  writeRecords(records.value)
+  closeNoteEditor()
+}
+
+function addItem(payload) {
+  items.value = [...items.value, createCustomItem(payload, todayKey.value)]
+  writeItems(items.value)
+  ensureTodayRecord()
+}
+
+function updateItem(payload) {
+  items.value = items.value.map((item) => {
+    if (item.id !== payload.id || item.isDefault) {
+      return item
+    }
+
+    return {
+      ...item,
+      name: payload.name.trim(),
+      emoji: payload.emoji.trim(),
+    }
+  })
+  writeItems(items.value)
+}
+
+function archiveItem(itemId) {
+  items.value = items.value.map((item) => {
+    if (item.id !== itemId || item.isDefault) {
+      return item
+    }
+
+    return {
+      ...item,
+      archived: true,
+      archivedOn: todayKey.value,
+    }
+  })
+  writeItems(items.value)
+}
+
+function replaceData(payload) {
+  items.value = payload.items
+  records.value = payload.records
+  writeItems(items.value)
+  writeRecords(records.value)
+  ensureTodayRecord()
+}
+
+function clearAllData() {
+  window.localStorage.removeItem(RECORDS_STORAGE_KEY)
+  window.localStorage.removeItem(ITEMS_STORAGE_KEY)
+  records.value = {}
+  items.value = [...DEFAULT_ITEMS]
+  noteEditor.value = null
+  isItemManagerOpen.value = false
+  isCelebrationOpen.value = false
+  ensureTodayRecord()
+}
+
+function refreshTimeIfNeeded() {
+  const now = new Date()
+  const previousDateKey = todayKey.value
+  currentDate.value = now
+
+  if (toDateKey(now) !== previousDateKey) {
+    ensureTodayRecord()
   }
 }
 
-ensureCurrentRecord()
+let timeRefreshTimer
 
 onMounted(() => {
-  document.addEventListener('visibilitychange', refreshDateIfNeeded)
+  document.addEventListener('visibilitychange', refreshTimeIfNeeded)
+  timeRefreshTimer = window.setInterval(refreshTimeIfNeeded, 60 * 1000)
 })
 
 onBeforeUnmount(() => {
-  document.removeEventListener('visibilitychange', refreshDateIfNeeded)
+  document.removeEventListener('visibilitychange', refreshTimeIfNeeded)
+  window.clearInterval(timeRefreshTimer)
 })
+
+ensureTodayRecord()
 </script>
 
 <template>
   <div class="page">
     <main class="app-shell">
-      <header class="hero">
-        <div class="hero__topline">
-          <p class="brand">DAY DONE</p>
-          <span class="today-badge">今天</span>
-        </div>
+      <nav class="view-tabs" aria-label="页面切换">
+        <button
+          v-for="navigationItem in NAVIGATION_ITEMS"
+          :key="navigationItem.id"
+          class="view-tabs__button"
+          :class="{ 'view-tabs__button--active': activeView === navigationItem.id }"
+          type="button"
+          :aria-current="activeView === navigationItem.id ? 'page' : undefined"
+          @click="navigateToView(navigationItem.id)"
+        >
+          {{ navigationItem.label }}
+        </button>
+      </nav>
 
-        <h1>三件小事，完成了就很棒</h1>
-        <p class="hero__date">{{ formatFullDate(currentDate) }}</p>
+      <HomeView
+        v-if="activeView === 'home'"
+        :current-date="currentDate"
+        :today-key="todayKey"
+        :active-items="homeItems"
+        :current-record="todayRecord"
+        :completed-count="completedCount"
+        :progress-message="progressMessage"
+        :progress-percent="progressPercent"
+        :recent-days="recentDays"
+        @toggle-item="toggleItem"
+        @edit-note="openNoteEditor"
+        @open-item-manager="openItemManager"
+      />
 
-        <div class="progress-card" aria-live="polite">
-          <div class="progress-card__number">
-            <strong>{{ completedCount }}</strong>
-            <span>/ {{ CHECK_ITEMS.length }}</span>
-          </div>
+      <CalendarView
+        v-else-if="activeView === 'calendar'"
+        :records="records"
+        :items="items"
+        :today-key="todayKey"
+        @edit-note="openNoteEditor"
+      />
 
-          <div class="progress-card__content">
-            <div class="progress-card__label">
-              <strong>今日进度</strong>
-              <span>{{ progressMessage }}</span>
-            </div>
-            <div class="progress-track" aria-hidden="true">
-              <span :style="{ width: progressPercent }"></span>
-            </div>
-          </div>
-        </div>
-      </header>
+      <StatsView
+        v-else-if="activeView === 'stats'"
+        :records="records"
+        :items="items"
+        :current-date="currentDate"
+      />
 
-      <section class="habit-section" aria-labelledby="habit-title">
-        <div class="section-heading">
-          <h2 id="habit-title">今天打卡</h2>
-          <span>{{ completedCount }}/{{ CHECK_ITEMS.length }} 完成</span>
-        </div>
-
-        <div class="habit-list">
-          <article
-            v-for="item in CHECK_ITEMS"
-            :key="item.key"
-            class="habit-card"
-            :class="{ 'habit-card--done': currentRecord[item.key] }"
-          >
-            <div class="habit-card__icon" aria-hidden="true">
-              <span>{{ item.emoji }}</span>
-              <span class="habit-card__check">✓</span>
-            </div>
-
-            <div class="habit-card__copy">
-              <h3>{{ item.label }}</h3>
-              <p>{{ currentRecord[item.key] ? '今天已完成' : item.hint }}</p>
-            </div>
-
-            <button
-              class="habit-card__button"
-              type="button"
-              :aria-pressed="currentRecord[item.key]"
-              :aria-label="`${currentRecord[item.key] ? '取消' : '完成'}${item.label}打卡`"
-              @click="toggleItem(item.key)"
-            >
-              {{ currentRecord[item.key] ? '取消打卡' : '完成打卡' }}
-            </button>
-          </article>
-        </div>
-      </section>
-
-      <section class="history-section" aria-labelledby="history-title">
-        <div class="section-heading">
-          <h2 id="history-title">最近 7 天</h2>
-          <span>只读记录</span>
-        </div>
-
-        <div class="history-list">
-          <article
-            v-for="day in recentDays"
-            :key="day.dateKey"
-            class="history-row"
-            :class="{ 'history-row--today': day.isToday }"
-          >
-            <div class="history-date">
-              <strong>{{ day.isToday ? '今天' : day.weekday }}</strong>
-              <span>{{ day.dateLabel }}</span>
-            </div>
-
-            <div
-              class="history-items"
-              :aria-label="`${day.dateLabel}完成 ${day.completedCount} 项，共 3 项`"
-            >
-              <span
-                v-for="item in CHECK_ITEMS"
-                :key="item.key"
-                class="history-item"
-                :class="{ 'history-item--done': day.record[item.key] }"
-                role="img"
-                :aria-label="`${item.label}${day.record[item.key] ? '已完成' : '未完成'}`"
-              >
-                {{ item.emoji }}
-              </span>
-            </div>
-
-            <strong class="history-score">{{ day.completedCount }}/3</strong>
-          </article>
-        </div>
-      </section>
+      <SettingsView
+        v-else
+        :items="items"
+        :records="records"
+        @open-item-manager="openItemManager"
+        @replace-data="replaceData"
+        @clear-data="clearAllData"
+      />
 
       <footer class="app-footer">数据只保存在当前浏览器的本地存储中</footer>
     </main>
+
+    <ItemManager
+      v-if="isItemManagerOpen"
+      :items="items"
+      @close="closeItemManager"
+      @save-item="(payload) => (payload.id ? updateItem(payload) : addItem(payload))"
+      @delete-item="archiveItem"
+    />
+
+    <CelebrationModal
+      v-if="isCelebrationOpen"
+      @close="closeCelebration"
+    />
+
+    <NoteEditor
+      v-if="noteEditor && noteEditorItem"
+      :date-key="noteEditor.dateKey"
+      :item="noteEditorItem"
+      :note="noteEditorNote"
+      @close="closeNoteEditor"
+      @save="saveNote"
+      @delete="deleteNote"
+    />
   </div>
 </template>
+
+
+
+
 
