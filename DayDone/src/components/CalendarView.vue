@@ -232,7 +232,14 @@ watch(
           <div class="day-detail__copy">
             <strong>{{ item.name }}</strong>
             <span v-if="item.archived" class="day-detail__archived">历史项目</span>
-            <p v-if="item.note" class="day-detail__note">“{{ item.note }}”</p>
+            <button
+              v-if="item.note"
+              class="day-detail__note"
+              type="button"
+              @click="$emit('edit-note', { dateKey: selectedDay.dateKey, itemId: item.id })"
+            >
+              “{{ item.note }}”
+            </button>
             <button
               v-if="selectedDay.record[item.id]"
               class="day-detail__note-button"
@@ -250,3 +257,4 @@ watch(
     </section>
   </div>
 </template>
+

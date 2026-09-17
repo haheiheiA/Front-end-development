@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import CalendarView from './components/CalendarView.vue'
+import CelebrationModal from './components/CelebrationModal.vue'
 import HomeView from './components/HomeView.vue'
 import ItemManager from './components/ItemManager.vue'
 import NoteEditor from './components/NoteEditor.vue'
@@ -39,6 +40,7 @@ const currentDate = ref(new Date())
 const activeView = ref('home')
 const isItemManagerOpen = ref(false)
 const noteEditor = ref(null)
+const isCelebrationOpen = ref(false)
 
 const todayKey = computed(() => toDateKey(currentDate.value))
 const activeItems = computed(() => items.value.filter((item) => !item.archived))
@@ -154,16 +156,32 @@ function toggleItem(itemId) {
     record[itemId] = false
     nextRecord = removeRecordMeta(record, itemId)
   } else {
+    const completesAllItems =
+      activeItems.value.length > 0 &&
+      completedCount.value === activeItems.value.length - 1
+
     record[itemId] = true
     nextRecord = updateRecordMeta(record, itemId, {
       completedAt: new Date().toISOString(),
       note: '',
     })
-    noteEditor.value = { dateKey, itemId }
+
+    records.value[dateKey] = nextRecord
+    writeRecords(records.value)
+
+    if (completesAllItems) {
+      isCelebrationOpen.value = true
+    }
+
+    return
   }
 
   records.value[dateKey] = nextRecord
   writeRecords(records.value)
+}
+
+function closeCelebration() {
+  isCelebrationOpen.value = false
 }
 
 function openNoteEditor({ dateKey, itemId }) {
@@ -257,6 +275,7 @@ function clearAllData() {
   items.value = [...DEFAULT_ITEMS]
   noteEditor.value = null
   isItemManagerOpen.value = false
+  isCelebrationOpen.value = false
   ensureTodayRecord()
 }
 
@@ -352,6 +371,11 @@ ensureTodayRecord()
       @delete-item="archiveItem"
     />
 
+    <CelebrationModal
+      v-if="isCelebrationOpen"
+      @close="closeCelebration"
+    />
+
     <NoteEditor
       v-if="noteEditor && noteEditorItem"
       :date-key="noteEditor.dateKey"
@@ -363,5 +387,6 @@ ensureTodayRecord()
     />
   </div>
 </template>
+
 
 
