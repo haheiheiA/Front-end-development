@@ -233,20 +233,13 @@ watch(
             <strong>{{ item.name }}</strong>
             <span v-if="item.archived" class="day-detail__archived">历史项目</span>
             <button
-              v-if="item.note"
-              class="day-detail__note"
-              type="button"
-              @click="$emit('edit-note', { dateKey: selectedDay.dateKey, itemId: item.id })"
-            >
-              “{{ item.note }}”
-            </button>
-            <button
               v-if="selectedDay.record[item.id]"
               class="day-detail__note-button"
               type="button"
               @click="$emit('edit-note', { dateKey: selectedDay.dateKey, itemId: item.id })"
             >
-              {{ item.note ? '编辑备注' : '添加备注' }}
+              <span v-if="item.note" class="day-detail__note">“{{ item.note }}”</span>
+              <span class="day-detail__note-action">{{ item.note ? '编辑备注' : '添加备注' }}</span>
             </button>
           </div>
           <span class="day-detail__status">
@@ -257,4 +250,5 @@ watch(
     </section>
   </div>
 </template>
+
 

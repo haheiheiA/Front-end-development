@@ -101,20 +101,13 @@ defineEmits(['toggle-item', 'edit-note', 'open-item-manager'])
               <span v-else>暂无记录</span>
             </div>
             <button
-              v-if="item.note"
-              class="habit-card__note-preview"
-              type="button"
-              @click="$emit('edit-note', { dateKey: todayKey, itemId: item.id })"
-            >
-              “{{ item.note }}”
-            </button>
-            <button
               v-if="currentRecord[item.id]"
               class="habit-card__note-button"
               type="button"
               @click="$emit('edit-note', { dateKey: todayKey, itemId: item.id })"
             >
-              {{ item.note ? '编辑备注' : '添加备注' }}
+              <span v-if="item.note" class="habit-card__note-preview">“{{ item.note }}”</span>
+              <span class="habit-card__note-action">{{ item.note ? '编辑备注' : '添加备注' }}</span>
             </button>
           </div>
 
@@ -172,4 +165,5 @@ defineEmits(['toggle-item', 'edit-note', 'open-item-manager'])
     </section>
   </div>
 </template>
+
 

@@ -7,6 +7,7 @@ import ItemManager from './components/ItemManager.vue'
 import NoteEditor from './components/NoteEditor.vue'
 import SettingsView from './components/SettingsView.vue'
 import StatsView from './components/StatsView.vue'
+import { useUiHistory } from './composables/useUiHistory'
 import {
   DEFAULT_ITEMS,
   ITEMS_STORAGE_KEY,
@@ -37,10 +38,19 @@ const NAVIGATION_ITEMS = [
 const records = ref(readRecords())
 const items = ref(readItems())
 const currentDate = ref(new Date())
-const activeView = ref('home')
-const isItemManagerOpen = ref(false)
-const noteEditor = ref(null)
-const isCelebrationOpen = ref(false)
+const {
+  activeView,
+  isItemManagerOpen,
+  noteEditor,
+  isCelebrationOpen,
+  navigateToView,
+  openItemManager,
+  openNoteEditor: openNoteEditorOverlay,
+  openCelebration,
+  closeItemManager,
+  closeNoteEditor,
+  closeCelebration,
+} = useUiHistory()
 
 const todayKey = computed(() => toDateKey(currentDate.value))
 const activeItems = computed(() => items.value.filter((item) => !item.archived))
@@ -170,7 +180,7 @@ function toggleItem(itemId) {
     writeRecords(records.value)
 
     if (completesAllItems) {
-      isCelebrationOpen.value = true
+      openCelebration()
     }
 
     return
@@ -180,10 +190,6 @@ function toggleItem(itemId) {
   writeRecords(records.value)
 }
 
-function closeCelebration() {
-  isCelebrationOpen.value = false
-}
-
 function openNoteEditor({ dateKey, itemId }) {
   const record = normalizeRecord(records.value[dateKey])
 
@@ -191,12 +197,9 @@ function openNoteEditor({ dateKey, itemId }) {
     return
   }
 
-  noteEditor.value = { dateKey, itemId }
+  openNoteEditorOverlay({ dateKey, itemId })
 }
 
-function closeNoteEditor() {
-  noteEditor.value = null
-}
 
 function saveNote({ dateKey, itemId, note }) {
   const record = normalizeRecord(records.value[dateKey])
@@ -315,7 +318,7 @@ ensureTodayRecord()
           :class="{ 'view-tabs__button--active': activeView === navigationItem.id }"
           type="button"
           :aria-current="activeView === navigationItem.id ? 'page' : undefined"
-          @click="activeView = navigationItem.id"
+          @click="navigateToView(navigationItem.id)"
         >
           {{ navigationItem.label }}
         </button>
@@ -333,7 +336,7 @@ ensureTodayRecord()
         :recent-days="recentDays"
         @toggle-item="toggleItem"
         @edit-note="openNoteEditor"
-        @open-item-manager="isItemManagerOpen = true"
+        @open-item-manager="openItemManager"
       />
 
       <CalendarView
@@ -355,7 +358,7 @@ ensureTodayRecord()
         v-else
         :items="items"
         :records="records"
-        @open-item-manager="isItemManagerOpen = true"
+        @open-item-manager="openItemManager"
         @replace-data="replaceData"
         @clear-data="clearAllData"
       />
@@ -366,7 +369,7 @@ ensureTodayRecord()
     <ItemManager
       v-if="isItemManagerOpen"
       :items="items"
-      @close="isItemManagerOpen = false"
+      @close="closeItemManager"
       @save-item="(payload) => (payload.id ? updateItem(payload) : addItem(payload))"
       @delete-item="archiveItem"
     />
@@ -387,6 +390,8 @@ ensureTodayRecord()
     />
   </div>
 </template>
+
+
 
 
 
