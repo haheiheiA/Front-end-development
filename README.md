@@ -5,6 +5,4 @@
 ## 项目列表
 
 - [DayDone](./DayDone)：手机端生活打卡应用，支持默认与自定义项目、月历、统计、备注、数据备份、完成庆祝、离线使用和安装到手机桌面。
-
-
-
+- [JobTrack](./JobTrack)：基于 Vue 3、TypeScript 和 Vite 的个人求职管理前端原型。
