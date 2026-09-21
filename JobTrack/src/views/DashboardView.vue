@@ -3,7 +3,11 @@ import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
 import { useJobStore } from '../stores/job'
 import type { JobStatus } from '../types/job'
-import { JOB_STATUS_COLORS, JOB_STATUS_LABELS, JOB_STATUS_ORDER } from '../utils/job'
+import {
+  JOB_STATUS_COLORS,
+  JOB_STATUS_LABELS,
+  JOB_STATUS_ORDER,
+} from '../utils/job'
 
 const jobStore = useJobStore()
 const { jobs } = storeToRefs(jobStore)
@@ -68,6 +72,7 @@ const metrics = computed(() => {
     },
   ]
 })
+
 </script>
 
 <template>

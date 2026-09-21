@@ -4,6 +4,7 @@ import JobCreateView from '../views/JobCreateView.vue'
 import JobDetailView from '../views/JobDetailView.vue'
 import JobEditView from '../views/JobEditView.vue'
 import JobsView from '../views/JobsView.vue'
+import ProgressView from '../views/ProgressView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,6 +27,14 @@ const router = createRouter({
       component: JobsView,
       meta: {
         title: '我的岗位',
+      },
+    },
+    {
+      path: '/progress',
+      name: 'progress',
+      component: ProgressView,
+      meta: {
+        title: '求职进度',
       },
     },
     {
