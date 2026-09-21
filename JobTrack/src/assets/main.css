@@ -40,6 +40,7 @@
 @layer base {
   html {
     font-family: var(--font-sans);
+    scrollbar-gutter: stable;
   }
 
   body {
@@ -55,6 +56,50 @@
   :where(a, button, input, select, textarea):focus-visible {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
+  }
+
+  :where(button, a[href], input, select, textarea) {
+    transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+    transition-duration: 140ms;
+    transition-timing-function: ease-out;
+  }
+
+  :where(button:not(:disabled), a[href]) {
+    cursor: pointer;
+  }
+
+  :where(button:not(:disabled), a[href]):active {
+    transform: translateY(1px);
+  }
+
+  :where(button:not(:disabled)):active {
+    filter: brightness(0.97);
+  }
+
+  :where(button, input, select, textarea):disabled {
+    cursor: not-allowed;
+  }
+
+  :where(input, select, textarea):disabled {
+    color: var(--color-ink-subtle);
+  }
+
+  :where(select:not(:disabled)):hover {
+    border-color: var(--color-line-strong);
+  }
+
+  :where(input, select, textarea)[aria-invalid='true'] {
+    border-color: var(--color-status-rejected);
+  }
+
+  :where(input, select, textarea)[aria-invalid='true']:focus-visible {
+    outline-color: var(--color-status-rejected);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where(button, a[href], input, select, textarea) {
+      transition-duration: 0.01ms;
+    }
   }
 }
 

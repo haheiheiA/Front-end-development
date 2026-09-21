@@ -10,9 +10,14 @@ const navItems = [
     icon: 'M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z',
   },
   {
-    label: '岗位',
+    label: '我的岗位',
     to: '/jobs',
     icon: 'M9 6V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1m-9 0h10a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Zm0 5h10',
+  },
+  {
+    label: '求职进度',
+    to: '/progress',
+    icon: 'M12 7v5l3 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
   },
 ] as const
 
