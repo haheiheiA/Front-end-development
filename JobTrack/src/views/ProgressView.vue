@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
+import EmptyState from '../components/common/EmptyState.vue'
 import JobFunnelSection from '../components/job/JobFunnelSection.vue'
 import { useJobStore } from '../stores/job'
 import {
@@ -194,7 +195,7 @@ function getBarHeight(value: number) {
 }</script>
 
 <template>
-  <section class="space-y-6">
+  <section class="space-y-5 sm:space-y-6">
     <header>
       <p class="text-xs font-medium uppercase tracking-[0.14em] text-ink-subtle">JobTrack</p>
       <h1 class="mt-2 text-2xl font-semibold tracking-[-0.02em] text-ink">求职进度</h1>
@@ -203,7 +204,7 @@ function getBarHeight(value: number) {
 
     <JobFunnelSection :jobs="jobs" />
 
-    <section class="surface-card p-6 lg:p-8">
+    <section class="surface-card p-5 sm:p-6 lg:p-8">
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 class="text-base font-semibold tracking-tight text-ink">近期求职数据</h2>
@@ -212,8 +213,8 @@ function getBarHeight(value: number) {
         <span class="text-xs text-ink-subtle">最近 7 天</span>
       </div>
 
-      <div class="mt-6 grid gap-4 sm:grid-cols-2">
-        <article class="rounded-card border border-line bg-surface-soft p-5">
+      <div class="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4">
+        <article class="rounded-card border border-line bg-surface-soft p-4 sm:p-5">
           <div class="flex items-center justify-between gap-4">
             <p class="text-sm font-medium text-ink-muted">最近 7 天投递</p>
             <span class="h-2 w-2 rounded-full bg-brand" aria-hidden="true" />
@@ -240,7 +241,7 @@ function getBarHeight(value: number) {
         </article>
       </div>
     </section>
-    <section class="surface-card p-6 lg:p-8">
+    <section class="surface-card p-5 sm:p-6 lg:p-8">
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 class="text-base font-semibold tracking-tight text-ink">最近 7 天活动趋势</h2>
@@ -263,32 +264,32 @@ function getBarHeight(value: number) {
         {{ recentSevenDayStats.interviewCount }} 次面试
       </p>
 
-      <div class="mt-5 overflow-x-auto">
-        <div class="grid min-w-[32rem] grid-cols-7 gap-2">
+      <div class="mt-4 sm:mt-5">
+        <div class="grid grid-cols-7 gap-1 sm:gap-2">
           <div
             v-for="day in recentSevenDayTrend"
             :key="day.date"
             class="flex min-w-0 flex-col items-center"
             :title="`${day.label} 投递 ${day.applications} 面试 ${day.interviews}`"
           >
-            <div class="flex h-36 w-full items-end justify-center gap-1.5 border-b border-line">
+            <div class="flex h-24 w-full items-end justify-center gap-1 border-b border-line sm:h-36 sm:gap-1.5">
               <span
-                class="w-3 rounded-t bg-brand"
+                class="w-1.5 rounded-t bg-brand sm:w-3"
                 :style="{ height: getBarHeight(day.applications) }"
                 aria-hidden="true"
               />
               <span
-                class="w-3 rounded-t bg-status-interview"
+                class="w-1.5 rounded-t bg-status-interview sm:w-3"
                 :style="{ height: getBarHeight(day.interviews) }"
                 aria-hidden="true"
               />
             </div>
-            <span class="mt-2 text-xs font-medium text-ink-subtle">{{ day.label }}</span>
+            <span class="mt-1.5 text-[10px] font-medium text-ink-subtle sm:mt-2 sm:text-xs">{{ day.label }}</span>
           </div>
         </div>
       </div>
     </section>
-    <section class="surface-card p-6 lg:p-8">
+    <section class="surface-card p-5 sm:p-6 lg:p-8">
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 class="text-base font-semibold tracking-tight text-ink">最近动态</h2>
@@ -304,10 +305,10 @@ function getBarHeight(value: number) {
           v-for="activity in recentActivities"
           :key="activity.id"
           :to="{ name: 'job-detail', params: { id: activity.jobId } }"
-          class="group flex gap-4 rounded-control py-4 no-underline transition-colors first:pt-0 last:pb-0 hover:bg-surface-soft"
+          class="group flex flex-col gap-3 rounded-control py-4 no-underline transition-colors first:pt-0 last:pb-0 hover:bg-surface-soft sm:flex-row sm:gap-4"
         >
           <span
-            class="mt-0.5 inline-flex h-7 shrink-0 items-center rounded-full px-2.5 text-xs font-medium"
+            class="mt-0.5 inline-flex h-7 self-start shrink-0 items-center rounded-full px-2.5 text-xs font-medium"
             :class="
               activity.type === 'application'
                 ? 'bg-brand-soft text-brand'
@@ -317,19 +318,19 @@ function getBarHeight(value: number) {
             {{ activity.type === 'application' ? '投递' : '面试' }}
           </span>
 
-          <div class="min-w-0 flex-1">
-            <div class="flex items-start justify-between gap-4">
-              <p class="truncate text-sm font-semibold text-ink">{{ activity.position }}</p>
+          <div class="min-w-0 w-full flex-1">
+            <div class="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+              <p class="line-clamp-2 break-words text-sm font-semibold text-ink">{{ activity.position }}</p>
               <time class="shrink-0 text-xs text-ink-subtle">{{ activity.timeLabel }}</time>
             </div>
-            <p class="mt-1 truncate text-sm text-ink-muted">
+            <p class="mt-1 line-clamp-2 break-words text-sm text-ink-muted">
               {{ activity.company }} · {{ activity.metaLabel }}
             </p>
           </div>
 
           <svg
             viewBox="0 0 24 24"
-            class="mt-1 h-4 w-4 shrink-0 text-ink-subtle transition-transform group-hover:translate-x-0.5"
+            class="mt-1 hidden h-4 w-4 shrink-0 text-ink-subtle transition-transform group-hover:translate-x-0.5 sm:block"
             fill="none"
             stroke="currentColor"
             stroke-width="1.8"
@@ -342,15 +343,12 @@ function getBarHeight(value: number) {
         </RouterLink>
       </div>
 
-      <div
+      <EmptyState
         v-else
-        class="mt-6 rounded-card border border-dashed border-line bg-surface-soft p-8 text-center"
-      >
-        <p class="text-sm font-semibold text-ink">暂无最近动态</p>
-        <p class="mt-2 text-sm text-ink-muted">
-          开始添加岗位和投递记录后，这里会显示最近活动。
-        </p>
-      </div>
+        class="mt-6"
+        title="暂无最近动态"
+        description="开始添加岗位和投递记录后，这里会显示最近活动。"
+      />
     </section>
   </section>
 </template>

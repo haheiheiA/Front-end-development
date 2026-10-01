@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import EmptyState from '../components/common/EmptyState.vue'
 import ContactSection from '../components/job/ContactSection.vue'
 import JobFormModal from '../components/job/JobFormModal.vue'
 import OfferInfoSection from '../components/job/OfferInfoSection.vue'
@@ -346,14 +347,28 @@ function handleInterviewSubmit() {
 </script>
 
 <template>
-  <section class="space-y-6">
-    <header class="flex items-start justify-between gap-6">
-      <div>
-        <p class="text-xs font-medium uppercase tracking-[0.14em] text-ink-subtle">JobTrack</p>
-        <h1 class="mt-2 text-2xl font-semibold tracking-[-0.02em] text-ink">岗位详情</h1>
-        <p v-if="job" class="mt-2 text-sm text-ink-muted">
-          {{ job.company }} · {{ job.position }}
-        </p>
+  <section class="space-y-5 sm:space-y-6">
+    <header class="flex flex-wrap items-start justify-between gap-5">
+      <div class="min-w-0">
+        <p class="text-xs font-medium uppercase tracking-[0.14em] text-ink-subtle">JobTrack · 岗位详情</p>
+        <h1 class="mt-2 break-words text-2xl font-semibold tracking-[-0.02em] text-ink">
+          {{ job?.position ?? '岗位详情' }}
+        </h1>
+        <div v-if="job" class="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-ink-muted">
+          <span class="break-words">{{ job.company }}</span>
+          <span class="h-1 w-1 rounded-full bg-line-strong" aria-hidden="true" />
+          <span
+            class="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-soft px-2.5 py-1 text-xs font-medium"
+            :style="{ color: JOB_STATUS_COLORS[job.status], borderColor: JOB_STATUS_COLORS[job.status] }"
+          >
+            <span
+              class="h-1.5 w-1.5 rounded-full"
+              :style="{ backgroundColor: JOB_STATUS_COLORS[job.status] }"
+              aria-hidden="true"
+            />
+            {{ JOB_STATUS_LABELS[job.status] }}
+          </span>
+        </div>
       </div>
 
       <div class="flex shrink-0 flex-wrap justify-end gap-3">
@@ -377,17 +392,14 @@ function handleInterviewSubmit() {
 
     <template v-if="job">
       <section class="surface-card p-6 lg:p-8">
-        <div class="flex items-start justify-between gap-6">
-          <div class="min-w-0">
-            <p class="text-sm font-medium text-ink-muted">{{ job.company }}</p>
-            <h2 class="mt-2 text-2xl font-semibold tracking-[-0.02em] text-ink">
-              {{ job.position }}
-            </h2>
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 class="text-base font-semibold tracking-tight text-ink">岗位信息</h2>
+            <p class="mt-1 text-sm text-ink-muted">当前岗位的完整基础信息。</p>
           </div>
-
           <span
-            class="inline-flex shrink-0 items-center gap-2 rounded-full border border-line bg-surface-soft px-3 py-1.5 text-xs font-medium"
-            :style="{ color: JOB_STATUS_COLORS[job.status] }"
+            class="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-soft px-2.5 py-1 text-xs font-medium"
+            :style="{ color: JOB_STATUS_COLORS[job.status], borderColor: JOB_STATUS_COLORS[job.status] }"
           >
             <span
               class="h-1.5 w-1.5 rounded-full"
@@ -398,10 +410,18 @@ function handleInterviewSubmit() {
           </span>
         </div>
 
-        <dl class="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
-          <div>
+        <dl class="mt-6 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div class="min-w-0">
+            <dt class="text-xs font-medium text-ink-subtle">公司名称</dt>
+            <dd class="mt-2 break-words text-sm font-medium text-ink">{{ job.company }}</dd>
+          </div>
+          <div class="min-w-0">
+            <dt class="text-xs font-medium text-ink-subtle">岗位名称</dt>
+            <dd class="mt-2 break-words text-sm font-medium text-ink">{{ job.position }}</dd>
+          </div>
+          <div class="min-w-0">
             <dt class="text-xs font-medium text-ink-subtle">工作地点</dt>
-            <dd class="mt-2 text-sm font-medium text-ink">{{ job.location ?? '未填写' }}</dd>
+            <dd class="mt-2 break-words text-sm font-medium text-ink">{{ job.location ?? '未填写' }}</dd>
           </div>
           <div>
             <dt class="text-xs font-medium text-ink-subtle">薪资</dt>
@@ -426,10 +446,10 @@ function handleInterviewSubmit() {
         </dl>
       </section>
 
-      <section v-if="job.description || job.requirements" class="surface-card p-6 lg:p-8">
+      <section v-if="job.description || job.requirements" class="surface-card bg-surface-soft/60 p-6 lg:p-7">
         <div v-if="job.description">
           <h2 class="text-base font-semibold tracking-tight text-ink">职位描述</h2>
-          <p class="mt-3 whitespace-pre-line text-sm leading-6 text-ink-muted">
+          <p class="mt-3 whitespace-pre-line break-words text-sm leading-6 text-ink-muted">
             {{ job.description }}
           </p>
         </div>
@@ -439,13 +459,13 @@ function handleInterviewSubmit() {
           :class="job.description ? 'mt-6 border-t border-line pt-6' : ''"
         >
           <h2 class="text-base font-semibold tracking-tight text-ink">任职要求</h2>
-          <p class="mt-3 whitespace-pre-line text-sm leading-6 text-ink-muted">
+          <p class="mt-3 whitespace-pre-line break-words text-sm leading-6 text-ink-muted">
             {{ job.requirements }}
           </p>
         </div>
       </section>
 
-      <section class="surface-card p-6 lg:p-8">
+      <section class="surface-card p-6 lg:p-7">
         <div class="flex items-start justify-between gap-6">
           <div>
             <h2 class="text-base font-semibold tracking-tight text-ink">投递记录</h2>
@@ -572,7 +592,7 @@ function handleInterviewSubmit() {
               </button>
             </div>
 
-            <p class="mt-4 whitespace-pre-line text-sm leading-6 text-ink-muted">
+            <p class="mt-4 whitespace-pre-line break-words text-sm leading-6 text-ink-muted">
               {{ record.note || '无备注' }}
             </p>
             <p class="mt-3 text-xs text-ink-subtle">
@@ -581,16 +601,23 @@ function handleInterviewSubmit() {
           </article>
         </div>
 
-        <div
+        <EmptyState
           v-else-if="!isRecordFormOpen"
-          class="mt-6 rounded-card border border-dashed border-line bg-surface-soft p-8 text-center"
+          class="mt-6"
+          title="暂无投递记录"
+          description="添加一条记录，用于跟踪该岗位的投递情况。"
         >
-          <p class="text-sm font-semibold text-ink">暂无投递记录</p>
-          <p class="mt-2 text-sm text-ink-muted">添加一条记录，用于跟踪该岗位的投递情况。</p>
-        </div>
+          <button
+            type="button"
+            class="inline-flex h-10 items-center justify-center rounded-control bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand/90"
+            @click="openCreateRecordForm"
+          >
+            添加投递记录
+          </button>
+        </EmptyState>
       </section>
 
-      <section class="surface-card p-6 lg:p-8">
+      <section class="surface-card p-6 lg:p-7">
         <div class="flex items-start justify-between gap-6">
           <div>
             <h2 class="text-base font-semibold tracking-tight text-ink">面试记录</h2>
@@ -781,7 +808,7 @@ function handleInterviewSubmit() {
               </div>
             </div>
 
-            <p class="mt-4 whitespace-pre-line text-sm leading-6 text-ink-muted">
+            <p class="mt-4 whitespace-pre-line break-words text-sm leading-6 text-ink-muted">
               {{ record.note || '无备注' }}
             </p>
             <p class="mt-3 text-xs text-ink-subtle">
@@ -790,13 +817,20 @@ function handleInterviewSubmit() {
           </article>
         </div>
 
-        <div
+        <EmptyState
           v-else-if="!isInterviewFormOpen"
-          class="mt-6 rounded-card border border-dashed border-line bg-surface-soft p-8 text-center"
+          class="mt-6"
+          title="暂无面试记录"
+          description="添加一条记录，用于安排和跟踪面试进度。"
         >
-          <p class="text-sm font-semibold text-ink">暂无面试记录</p>
-          <p class="mt-2 text-sm text-ink-muted">添加一条记录，用于安排和跟踪面试进度。</p>
-        </div>
+          <button
+            type="button"
+            class="inline-flex h-10 items-center justify-center rounded-control bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand/90"
+            @click="openCreateInterviewForm"
+          >
+            添加面试记录
+          </button>
+        </EmptyState>
       </section>
 
       <OfferInfoSection :job="job" />
@@ -812,15 +846,18 @@ function handleInterviewSubmit() {
       />
     </template>
 
-    <div v-else class="surface-card border-dashed bg-surface/70 p-10 text-center">
-      <p class="text-sm font-semibold text-ink">岗位不存在</p>
-      <p class="mt-2 text-sm text-ink-muted">无法找到 ID 为“{{ jobId }}”的岗位。</p>
+    <EmptyState
+      v-else
+      class="surface-card bg-surface/70 p-10"
+      title="岗位不存在"
+      :description="`无法找到 ID 为“${jobId}”的岗位。`"
+    >
       <RouterLink
         to="/jobs"
-        class="mt-5 inline-flex h-11 items-center justify-center rounded-control border border-line bg-surface px-5 text-sm font-medium text-ink transition-colors hover:border-line-strong hover:bg-surface-soft"
+        class="inline-flex h-10 items-center justify-center rounded-control border border-line bg-surface px-4 text-sm font-medium text-ink transition-colors hover:border-line-strong hover:bg-surface-soft"
       >
         返回我的岗位
       </RouterLink>
-    </div>
+    </EmptyState>
   </section>
 </template>

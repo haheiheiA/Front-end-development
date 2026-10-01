@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router'
 
+defineProps<{
+  open: boolean
+}>()
+
+const emit = defineEmits<{
+  close: []
+}>()
+
 const route = useRoute()
 
 const navItems = [
@@ -22,16 +30,33 @@ const navItems = [
 ] as const
 
 function isNavActive(path: string) {
-  return path === '/dashboard' ? route.path === path : route.path === path || route.path.startsWith(`${path}/`)
+  return path === '/dashboard'
+    ? route.path === path
+    : route.path === path || route.path.startsWith(`${path}/`)
+}
+
+function handleNavigate() {
+  emit('close')
 }
 </script>
 
 <template>
+  <button
+    v-if="open"
+    type="button"
+    class="fixed inset-0 z-40 bg-ink/25 lg:hidden"
+    aria-label="关闭导航菜单"
+    @click="emit('close')"
+  />
+
   <aside
-    class="hidden border-r border-line bg-surface/95 lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex lg:w-64 lg:flex-col"
+    :class="[
+      'fixed inset-y-0 left-0 z-50 w-64 flex-col border-r border-line bg-surface/95 lg:z-40 lg:flex lg:shadow-none',
+      open ? 'flex shadow-card' : 'hidden',
+    ]"
   >
-    <div class="flex h-[4.25rem] items-center border-b border-line px-5">
-      <RouterLink to="/dashboard" class="flex items-center gap-3">
+    <div class="flex h-[4.25rem] shrink-0 items-center border-b border-line px-5">
+      <RouterLink to="/dashboard" class="flex items-center gap-3" @click="handleNavigate">
         <span
           class="flex h-9 w-9 items-center justify-center rounded-control bg-brand text-sm font-semibold text-white shadow-sm"
         >
@@ -44,7 +69,7 @@ function isNavActive(path: string) {
       </RouterLink>
     </div>
 
-    <div class="flex-1 px-3 py-6">
+    <div class="flex-1 overflow-y-auto px-3 py-6">
       <p class="px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
         Workspace
       </p>
@@ -61,6 +86,7 @@ function isNavActive(path: string) {
               : 'text-ink-muted hover:bg-surface-soft hover:text-ink'
           "
           :aria-current="isNavActive(item.to) ? 'page' : undefined"
+          @click="handleNavigate"
         >
           <svg
             viewBox="0 0 24 24"

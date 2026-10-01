@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue'
+import EmptyState from '../common/EmptyState.vue'
 import { useJobStore } from '../../stores/job'
 import type { Job, JobSalary, OfferInfo } from '../../types/job'
 import { formatJobDate, formatJobDateTime, formatJobSalary } from '../../utils/job'
@@ -184,7 +185,7 @@ function handleSubmit() {
 </script>
 
 <template>
-  <section class="surface-card p-6 lg:p-8">
+  <section class="surface-card bg-surface-soft/60 p-6 lg:p-7">
     <div class="flex items-start justify-between gap-6">
       <div>
         <h2 class="text-base font-semibold tracking-tight text-ink">Offer 信息</h2>
@@ -410,7 +411,7 @@ function handleSubmit() {
         </dl>
       </template>
 
-      <p class="mt-4 whitespace-pre-line text-sm leading-6 text-ink-muted">
+      <p class="mt-4 whitespace-pre-line break-words text-sm leading-6 text-ink-muted">
         {{ job.offer.note || '无备注' }}
       </p>
       <p class="mt-3 text-xs text-ink-subtle">
@@ -418,12 +419,19 @@ function handleSubmit() {
       </p>
     </div>
 
-    <div
+    <EmptyState
       v-else
-      class="mt-6 rounded-card border border-dashed border-line bg-surface-soft p-8 text-center"
+      class="mt-6"
+      title="暂无 Offer 信息"
+      description="记录 Offer 状态、薪资和入职时间，方便后续比较。"
     >
-      <p class="text-sm font-semibold text-ink">暂无 Offer 信息</p>
-      <p class="mt-2 text-sm text-ink-muted">记录 Offer 状态、薪资和入职时间，方便后续比较。</p>
-    </div>
+      <button
+        type="button"
+        class="inline-flex h-10 items-center justify-center rounded-control bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand/90"
+        @click="openCreateForm"
+      >
+        添加 Offer
+      </button>
+    </EmptyState>
   </section>
 </template>

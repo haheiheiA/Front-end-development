@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import EmptyState from '../components/common/EmptyState.vue'
 import JobFormModal from '../components/job/JobFormModal.vue'
 import { useJobStore } from '../stores/job'
 import type { Job, JobStatus } from '../types/job'
@@ -120,8 +121,8 @@ function handleStatusChange(job: Job, event: Event) {
 </script>
 
 <template>
-  <section class="space-y-6">
-    <header class="flex items-start justify-between gap-6">
+  <section class="space-y-5 sm:space-y-6">
+    <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
       <div>
         <p class="text-xs font-medium uppercase tracking-[0.14em] text-ink-subtle">JobTrack</p>
         <h1 class="mt-2 text-2xl font-semibold tracking-[-0.02em] text-ink">我的岗位</h1>
@@ -130,7 +131,7 @@ function handleStatusChange(job: Job, event: Event) {
 
       <button
         type="button"
-        class="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-control bg-brand px-5 text-sm font-medium text-white transition-colors hover:bg-brand/90"
+        class="inline-flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-control bg-brand px-5 text-sm font-medium text-white transition-colors hover:bg-brand/90 sm:w-auto"
         @click="openCreateJobForm"
       >
         <svg
@@ -149,8 +150,8 @@ function handleStatusChange(job: Job, event: Event) {
     </header>
 
     <section class="surface-card p-4 lg:p-5" aria-label="岗位搜索、筛选和排序">
-      <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_12rem_12rem]">
-        <label class="block">
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_12rem_12rem]">
+        <label class="block sm:col-span-2 lg:col-span-1">
           <span class="mb-2 block text-xs font-medium text-ink-muted">搜索</span>
           <span class="relative block">
             <svg
@@ -215,44 +216,49 @@ function handleStatusChange(job: Job, event: Event) {
       </div>
     </section>
 
-    <div
+    <EmptyState
       v-if="jobs.length === 0"
-      class="surface-card border-dashed bg-surface/70 p-10 text-center"
+      title="还没有岗位记录"
+      description="添加你的第一个岗位，开始记录求职进度。"
     >
-      <p class="text-sm font-semibold text-ink">暂无岗位</p>
-      <p class="mt-2 text-sm text-ink-muted">当前还没有岗位记录，后续添加的岗位会显示在这里。</p>
-    </div>
-
-    <div
-      v-else-if="visibleJobs.length === 0"
-      class="surface-card border-dashed bg-surface/70 p-10 text-center"
-    >
-      <p class="text-sm font-semibold text-ink">没有找到匹配的岗位</p>
-      <p class="mt-2 text-sm text-ink-muted">尝试清空搜索关键词，或将状态筛选调整为“全部”。</p>
       <button
         type="button"
-        class="mt-5 rounded-control border border-line bg-surface px-4 py-2 text-sm font-medium text-ink transition-colors hover:border-line-strong hover:bg-surface-soft"
+        class="inline-flex h-10 items-center justify-center rounded-control bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand/90"
+        @click="openCreateJobForm"
+      >
+        添加岗位
+      </button>
+    </EmptyState>
+
+    <EmptyState
+      v-else-if="visibleJobs.length === 0"
+      title="没有找到匹配的岗位"
+      description="尝试调整搜索关键词或筛选条件。"
+    >
+      <button
+        type="button"
+        class="inline-flex h-10 items-center justify-center rounded-control border border-line bg-surface px-4 text-sm font-medium text-ink transition-colors hover:border-line-strong hover:bg-surface-soft"
         @click="clearFilters"
       >
         清除搜索和筛选
       </button>
-    </div>
+    </EmptyState>
 
     <div v-else class="grid gap-4 xl:grid-cols-2">
       <article
         v-for="job in visibleJobs"
         :key="job.id"
-        class="surface-card flex flex-col p-5 transition-colors duration-150 hover:border-line-strong"
+        class="surface-card flex h-full flex-col p-4 transition-[border-color,box-shadow] duration-150 hover:border-line-strong hover:shadow-[0_4px_14px_rgb(35_39_35_/_0.06)] sm:p-5"
       >
         <div class="flex items-start justify-between gap-4">
           <div class="min-w-0">
-            <p class="text-xs font-medium text-ink-subtle">{{ job.company }}</p>
-            <h2 class="mt-1 truncate text-base font-semibold tracking-tight text-ink">
+            <p class="truncate text-xs font-medium text-ink-subtle">{{ job.company }}</p>
+            <h2 class="mt-1.5 truncate text-base font-semibold tracking-tight text-ink">
               {{ job.position }}
             </h2>
           </div>
 
-          <div class="relative inline-flex shrink-0 items-center">
+          <div class="relative z-20 inline-flex shrink-0 items-center">
             <span
               class="pointer-events-none absolute left-2.5 z-10 h-1.5 w-1.5 rounded-full"
               :style="{ backgroundColor: JOB_STATUS_COLORS[job.status] }"
@@ -260,8 +266,8 @@ function handleStatusChange(job: Job, event: Event) {
             />
             <select
               :value="job.status"
-              class="h-7 cursor-pointer appearance-none rounded-full border border-line bg-surface-soft py-0 pl-6 pr-7 text-xs font-medium transition-colors focus-visible:border-focus"
-              :style="{ color: JOB_STATUS_COLORS[job.status] }"
+              class="h-7 cursor-pointer appearance-none rounded-full border bg-surface-soft py-0 pl-6 pr-7 text-xs font-medium transition-colors hover:bg-surface focus-visible:border-focus"
+              :style="{ color: JOB_STATUS_COLORS[job.status], borderColor: JOB_STATUS_COLORS[job.status] }"
               :aria-label="`修改 ${job.company} ${job.position} 的岗位状态`"
               @change="handleStatusChange(job, $event)"
             >
@@ -285,14 +291,14 @@ function handleStatusChange(job: Job, event: Event) {
           </div>
         </div>
 
-        <div class="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-ink-muted">
-          <span>{{ job.location ?? '地点未填写' }}</span>
+        <div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-ink-muted sm:mt-5">
+          <span class="max-w-full truncate">{{ job.location ?? '地点未填写' }}</span>
           <span class="h-1 w-1 rounded-full bg-line-strong" aria-hidden="true" />
           <span>{{ formatJobSalary(job.salary) }}</span>
         </div>
 
         <div
-          class="mt-5 flex items-center justify-between gap-4 border-t border-line pt-4 text-xs text-ink-subtle"
+          class="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-t border-line pt-4 text-xs text-ink-subtle sm:mt-5"
         >
           <div class="flex min-w-0 items-center gap-2.5">
             <span>{{ formatJobDate(job.appliedAt) }}</span>
@@ -300,10 +306,10 @@ function handleStatusChange(job: Job, event: Event) {
             <span class="truncate">{{ JOB_SOURCE_LABELS[job.source] }}</span>
           </div>
 
-          <div class="flex shrink-0 items-center gap-1">
+          <div class="ml-auto flex shrink-0 items-center gap-1">
             <RouterLink
               :to="{ name: 'job-detail', params: { id: job.id } }"
-              class="inline-flex items-center gap-1 rounded-control px-2 py-1 font-medium text-ink-muted transition-colors hover:bg-surface-soft hover:text-ink"
+              class="inline-flex h-8 items-center gap-1 rounded-control px-2.5 font-medium text-ink-muted transition-colors hover:bg-surface-soft hover:text-ink"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -323,7 +329,7 @@ function handleStatusChange(job: Job, event: Event) {
 
             <button
               type="button"
-              class="inline-flex items-center gap-1 rounded-control px-2 py-1 font-medium text-brand transition-colors hover:bg-brand-soft"
+              class="inline-flex h-8 items-center gap-1 rounded-control px-2.5 font-medium text-brand transition-colors hover:bg-brand-soft"
               @click="openEditJobForm(job)"
             >
               <svg
@@ -344,7 +350,7 @@ function handleStatusChange(job: Job, event: Event) {
 
             <button
               type="button"
-              class="inline-flex items-center gap-1 rounded-control px-2 py-1 font-medium text-status-rejected transition-colors hover:bg-status-rejected/10"
+              class="inline-flex h-8 items-center gap-1 rounded-control px-2.5 font-medium text-ink-subtle transition-colors hover:bg-status-rejected/10 hover:text-status-rejected focus-visible:text-status-rejected"
               @click="handleDelete(job)"
             >
               <svg
