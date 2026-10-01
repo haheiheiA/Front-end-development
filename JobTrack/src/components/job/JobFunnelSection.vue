@@ -85,7 +85,7 @@ const funnel = computed(() => {
 </script>
 
 <template>
-  <section class="surface-card p-6 lg:p-8">
+  <section class="surface-card p-5 sm:p-6 lg:p-8">
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
         <h2 class="text-base font-semibold tracking-tight text-ink">求职进度</h2>
@@ -96,18 +96,18 @@ const funnel = computed(() => {
       </span>
     </div>
 
-    <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
       <article
         v-for="(stage, index) in funnel"
         :key="stage.label"
         class="rounded-card border border-line bg-surface-soft p-4 sm:p-5"
       >
         <div class="flex items-center justify-between gap-3">
-          <span class="text-xs font-medium tracking-[0.12em] text-ink-subtle">
+          <span class="text-[11px] font-medium tracking-[0.12em] text-ink-subtle sm:text-xs">
             {{ String(index + 1).padStart(2, '0') }}
           </span>
           <span
-            class="text-xs font-medium"
+            class="text-[11px] font-medium sm:text-xs"
             :class="index === 0 ? 'text-ink-subtle' : 'text-brand'"
           >
             {{ stage.rateLabel }}

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue'
+import EmptyState from '../common/EmptyState.vue'
 import { useJobStore } from '../../stores/job'
 import type { ContactRecord, Job } from '../../types/job'
 import { formatJobDateTime } from '../../utils/job'
@@ -153,7 +154,7 @@ function handleSubmit() {
 </script>
 
 <template>
-  <section class="surface-card p-6 lg:p-8">
+  <section class="surface-card bg-surface-soft/60 p-6 lg:p-7">
     <div class="flex items-start justify-between gap-6">
       <div>
         <h2 class="text-base font-semibold tracking-tight text-ink">联系人</h2>
@@ -329,7 +330,7 @@ function handleSubmit() {
           </div>
         </dl>
 
-        <p class="mt-4 whitespace-pre-line text-sm leading-6 text-ink-muted">
+        <p class="mt-4 whitespace-pre-line break-words text-sm leading-6 text-ink-muted">
           {{ contact.note || '无备注' }}
         </p>
         <p class="mt-3 text-xs text-ink-subtle">
@@ -338,12 +339,19 @@ function handleSubmit() {
       </article>
     </div>
 
-    <div
+    <EmptyState
       v-else-if="!isFormOpen"
-      class="mt-6 rounded-card border border-dashed border-line bg-surface-soft p-8 text-center"
+      class="mt-6"
+      title="暂无联系人"
+      description="添加联系人，记录 HR 或招聘人员的联系方式。"
     >
-      <p class="text-sm font-semibold text-ink">暂无联系人</p>
-      <p class="mt-2 text-sm text-ink-muted">添加联系人，记录 HR 或招聘人员的联系方式。</p>
-    </div>
+      <button
+        type="button"
+        class="inline-flex h-10 items-center justify-center rounded-control bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand/90"
+        @click="openCreateForm"
+      >
+        添加联系人
+      </button>
+    </EmptyState>
   </section>
 </template>

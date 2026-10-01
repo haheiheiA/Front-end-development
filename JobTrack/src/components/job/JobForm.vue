@@ -163,7 +163,7 @@ function handleSubmit() {
     novalidate
     @submit.prevent="handleSubmit"
   >
-    <div class="border-b border-line p-6 lg:p-8">
+    <div class="border-b border-line p-5 sm:p-6 lg:p-8">
       <div>
         <h2 class="text-base font-semibold tracking-tight text-ink">岗位信息</h2>
         <p class="mt-1 text-sm text-ink-muted">填写核心信息，带 * 的字段为必填项。</p>
@@ -179,7 +179,7 @@ function handleSubmit() {
             type="text"
             autocomplete="organization"
             placeholder="例如：腾讯"
-            class="h-11 w-full rounded-control border border-line bg-surface-soft px-3 text-sm text-ink transition-colors placeholder:text-ink-subtle focus-visible:border-focus"
+            class="h-11 w-full rounded-control border border-line bg-surface px-3 text-sm text-ink transition-colors placeholder:text-ink-subtle focus-visible:border-focus"
             :style="errors.company ? { borderColor: 'var(--color-status-rejected)' } : undefined"
             :aria-invalid="Boolean(errors.company)"
             @input="errors.company = undefined"
@@ -198,7 +198,7 @@ function handleSubmit() {
             type="text"
             autocomplete="organization-title"
             placeholder="例如：Web 前端开发工程师"
-            class="h-11 w-full rounded-control border border-line bg-surface-soft px-3 text-sm text-ink transition-colors placeholder:text-ink-subtle focus-visible:border-focus"
+            class="h-11 w-full rounded-control border border-line bg-surface px-3 text-sm text-ink transition-colors placeholder:text-ink-subtle focus-visible:border-focus"
             :style="errors.position ? { borderColor: 'var(--color-status-rejected)' } : undefined"
             :aria-invalid="Boolean(errors.position)"
             @input="errors.position = undefined"
@@ -215,7 +215,7 @@ function handleSubmit() {
             type="text"
             autocomplete="address-level2"
             placeholder="例如：上海 / 远程"
-            class="h-11 w-full rounded-control border border-line bg-surface-soft px-3 text-sm text-ink transition-colors placeholder:text-ink-subtle focus-visible:border-focus"
+            class="h-11 w-full rounded-control border border-line bg-surface px-3 text-sm text-ink transition-colors placeholder:text-ink-subtle focus-visible:border-focus"
           />
         </label>
 
@@ -225,7 +225,7 @@ function handleSubmit() {
           </span>
           <select
             v-model="form.status"
-            class="h-11 w-full cursor-pointer rounded-control border border-line bg-surface-soft px-3 text-sm text-ink transition-colors focus-visible:border-focus"
+            class="h-11 w-full cursor-pointer rounded-control border border-line bg-surface px-3 text-sm text-ink transition-colors focus-visible:border-focus"
             :style="errors.status ? { borderColor: 'var(--color-status-rejected)' } : undefined"
             :aria-invalid="Boolean(errors.status)"
             @change="handleStatusChange"
@@ -246,7 +246,7 @@ function handleSubmit() {
           <input
             v-model="form.appliedAt"
             type="date"
-            class="h-11 w-full rounded-control border border-line bg-surface-soft px-3 text-sm text-ink transition-colors focus-visible:border-focus disabled:cursor-not-allowed disabled:opacity-60"
+            class="h-11 w-full rounded-control border border-line bg-surface px-3 text-sm text-ink transition-colors focus-visible:border-focus disabled:cursor-not-allowed disabled:opacity-60"
             :disabled="form.status === 'saved'"
             :style="errors.appliedAt ? { borderColor: 'var(--color-status-rejected)' } : undefined"
             :aria-invalid="Boolean(errors.appliedAt)"
@@ -269,7 +269,7 @@ function handleSubmit() {
           </span>
           <select
             v-model="form.source"
-            class="h-11 w-full cursor-pointer rounded-control border border-line bg-surface-soft px-3 text-sm text-ink transition-colors focus-visible:border-focus"
+            class="h-11 w-full cursor-pointer rounded-control border border-line bg-surface px-3 text-sm text-ink transition-colors focus-visible:border-focus"
             :style="errors.source ? { borderColor: 'var(--color-status-rejected)' } : undefined"
             :aria-invalid="Boolean(errors.source)"
             @change="errors.source = undefined"
@@ -287,7 +287,7 @@ function handleSubmit() {
 
     <div
       :class="embedded ? 'sticky bottom-0 z-10 bg-surface-soft/95' : ''"
-      class="flex flex-col-reverse items-stretch gap-3 bg-surface-soft px-6 py-4 sm:flex-row sm:items-center sm:justify-end lg:px-8"
+      class="flex flex-col-reverse items-stretch gap-3 bg-surface-soft px-5 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6 lg:px-8"
     >
       <p v-if="errorMessage" class="text-sm text-status-rejected sm:mr-auto">
         {{ errorMessage }}

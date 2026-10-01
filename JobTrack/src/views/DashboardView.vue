@@ -76,7 +76,7 @@ const metrics = computed(() => {
 </script>
 
 <template>
-  <section class="space-y-6">
+  <section class="space-y-5 sm:space-y-6">
     <header>
       <p class="text-xs font-medium uppercase tracking-[0.14em] text-ink-subtle">JobTrack</p>
       <h1 class="mt-2 text-2xl font-semibold tracking-[-0.02em] text-ink">概览</h1>
@@ -85,18 +85,18 @@ const metrics = computed(() => {
       </p>
     </header>
 
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      <article v-for="metric in metrics" :key="metric.label" class="surface-card p-5">
+    <div class="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
+      <article v-for="metric in metrics" :key="metric.label" class="surface-card p-4 sm:p-5">
         <p class="text-sm font-medium text-ink-muted">{{ metric.label }}</p>
         <div class="mt-3 flex items-end gap-2">
-          <p class="text-3xl font-semibold tracking-[-0.03em] text-ink">{{ metric.value }}</p>
+          <p class="text-2xl font-semibold tracking-[-0.03em] text-ink sm:text-3xl">{{ metric.value }}</p>
           <span class="pb-1 text-sm text-ink-subtle">个</span>
         </div>
         <p class="mt-3 text-xs text-ink-subtle">{{ metric.detail }}</p>
       </article>
     </div>
 
-    <section class="surface-card p-6 lg:p-8">
+    <section class="surface-card p-5 sm:p-6 lg:p-8">
       <div class="flex items-start justify-between gap-6">
         <div>
           <h2 class="text-base font-semibold tracking-tight text-ink">招聘进度</h2>
@@ -105,7 +105,7 @@ const metrics = computed(() => {
         <span class="text-xs text-ink-subtle">{{ jobs.length }} 个岗位</span>
       </div>
 
-      <div class="mt-6 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+      <div class="mt-5 grid gap-x-6 gap-y-3 sm:mt-6 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-4">
         <div
           v-for="status in JOB_STATUS_ORDER"
           :key="status"
